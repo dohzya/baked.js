@@ -318,10 +318,11 @@ var baked = require("./baked");
 
   Router.prototype.partialCb = function(src, env, readFile) {
     var _this = this;
-    return function (name) {
+    return function (name, userEnv) {
       var partial = getPartialPath(_this, name, src);
       var content = readFile(partial);
-      return baked.renderTemplate(content, env.ctx);
+      var partialEnv = userEnv ? _.assign(env.ctx, userEnv) : env.ctx;
+      return baked.renderTemplate(content, partialEnv);
     };
   };
 

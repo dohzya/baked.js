@@ -34,7 +34,7 @@ var baked = require("./baked");
   };
 
   function isTemplate(file) {
-    return /\.html$/.test(_.last(els(file)));
+    return /\.html$/.test(file);
   }
 
   function srcForFile(router, file) {

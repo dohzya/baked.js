@@ -91,7 +91,7 @@ var vm = require("vm");
     function toUpperCase(str, l) { return l.toUpperCase(); }
     var scriptRx = /<script +type="text\/prismic-query"([^>]*)>([\s\S]*?)<\/script>/ig;
     conf.tmpl = conf.tmpl.replace(scriptRx, function (str, scriptParams, scriptContent) {
-      var dataRx = /data-([a-z0-9\-]+)="([^"]*)"/ig;
+      var dataRx = /data-([a-z0-9\-]+)(="([^"]*)")?/ig;
       var dataset = {};
       var match;
       var binding = {
@@ -99,7 +99,7 @@ var vm = require("vm");
       };
       while ((match = dataRx.exec(scriptParams)) !== null) {
         var attribute = match[1].toLowerCase();
-        var value = match[2];
+        var value = match[3] || true;
         var key;
         if (/^query-/.test(attribute)) {
           key = attribute.replace(/^query-/, '').replace(/-(.)/g, toUpperCase);
@@ -113,6 +113,7 @@ var vm = require("vm");
       if (name) {
         _.assign(binding, {
           form: dataset.form || 'everything',
+          single: !!dataset.single,
           render: function(api) {
             return renderQuery(scriptContent, conf.args, api);
           }
@@ -150,7 +151,7 @@ var vm = require("vm");
             });
           return deferred.promise
             .then(
-              function (documents) { return [name, documents.results]; },
+              function (documents) { return [name, binding.single ? documents.results[0] : documents.results]; },
               function (err) { conf.logger.error("Error while running query: \n%s\n", binding.predicates, err); }
             );
         }))
